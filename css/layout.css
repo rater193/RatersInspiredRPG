@@ -1,0 +1,87 @@
+/* Panel and Layout Components */
+.panel {
+  background: linear-gradient(145deg, rgba(12, 16, 24, 0.98), rgba(5, 8, 15, 0.98));
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.01), 0 20px 40px rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pill {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-muted);
+}
+
+.left-column-section {
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.tiny-muted {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Menu View */
+.menu-view {
+  flex: 1;
+  border-radius: 10px;
+  background: rgba(4, 7, 14, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 10px 12px;
+  overflow-y: auto;
+}
+
+.menu-section {
+  margin-bottom: 10px;
+}
+
+.menu-section:last-child {
+  margin-bottom: 0;
+}
+
+.menu-section-title {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.menu-description {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}

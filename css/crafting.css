@@ -1,0 +1,124 @@
+/* Mining and Crafting Cards */
+.armory-search-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.armory-search-input {
+  flex: 1;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+}
+
+.armory-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.armory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 6px;
+}
+
+.armory-card {
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.armory-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.armory-card-name {
+  font-size: 12px;
+}
+
+.armory-card-tier {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.armory-card-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.armory-card-ingredients {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.armory-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
+.armory-status {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.mining-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 6px;
+}
+
+.mining-card {
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mining-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.mining-card-name {
+  font-size: 12px;
+}
+
+.mining-card-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.mining-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
+.mining-status {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: right;
+}

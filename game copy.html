@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Idle RPG Stat Builder — Taming & Boxes (Fixed)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#050608;--bg-alt:#10131a;--accent:#3f8cff;--accent-soft:rgba(63,140,255,0.15);
+      --text:#e5e9f0;--text-muted:#7b88a1;--border:#242b38;--danger:#ff4b6a;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{background:radial-gradient(circle at top,#151824 0,#050608 50%,#020308 100%);color:var(--text);min-height:100vh;display:flex;align-items:stretch;justify-content:center;padding:16px}
+    #app{width:1200px;max-width:100%;display:grid;grid-template-columns:1.1fr 1.6fr;gap:12px}
+    .panel{background:linear-gradient(145deg,rgba(12,16,24,0.98),rgba(5,8,15,0.98));border-radius:12px;border:1px solid var(--border);padding:12px 14px;box-shadow:0 0 0 1px rgba(255,255,255,0.01),0 20px 40px rgba(0,0,0,0.75);display:flex;flex-direction:column;gap:10px}
+    .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+    .panel-title{font-size:15px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--text-muted)}
+    .pill{font-size:11px;text-transform:uppercase;letter-spacing:.12em;padding:3px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,0.02);color:var(--text-muted)}
+    hr{border:none;border-top:1px solid rgba(255,255,255,0.04);margin:4px 0 8px}
+    .left-column-section{margin-bottom:10px}
+    .section-title{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);margin-bottom:4px}
+    .hp-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+    .hp-bar-wrapper{flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,0.05);overflow:hidden;position:relative}
+    .hp-bar-fill{height:100%;background:linear-gradient(90deg,#ff5474,#ffc857);transition:width .2s ease-out}
+    .hp-text{font-size:12px;font-variant-numeric:tabular-nums;color:var(--text-muted);min-width:80px;text-align:right}
+    .currency-row{display:flex;justify-content:flex-start;gap:10px;font-size:13px;color:var(--text-muted)}
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--accent);box-shadow:0 0 6px rgba(63,140,255,0.7)}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px;font-size:13px}
+    .stat-row{display:flex;flex-direction:column;padding:4px 6px;border-radius:6px;background:rgba(255,255,255,0.01)}
+    .stat-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px}
+    .stat-label{color:var(--text-muted)}
+    .stat-value{font-variant-numeric:tabular-nums}
+    .xp-bar{margin-top:2px;width:100%;height:4px;border-radius:999px;background:rgba(255,255,255,0.04);overflow:hidden;position:relative}
+    .xp-fill{height:100%;background:linear-gradient(90deg,#5ca0ff,#4fd9b3);width:0;transition:width .2s ease-out}
+    .tiny-muted{font-size:11px;color:var(--text-muted)}
+    .inventory-header-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+    .inventory-capacity{font-size:11px;color:var(--text-muted)}
+    .inventory-list{max-height:160px;overflow-y:auto;padding-right:4px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
+    .inventory-item{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03)}
+    .inventory-item:last-child{border-bottom:none}
+    .inventory-item-name{color:var(--text)}
+    .inventory-item-qty{font-variant-numeric:tabular-nums;color:var(--text-muted)}
+    .inventory-empty{padding:8px;font-size:12px;color:var(--text-muted);text-align:center}
+    .log{max-height:160px;overflow-y:auto;padding:6px 8px;border-radius:8px;background:radial-gradient(circle at top left,rgba(63,140,255,0.06),rgba(10,12,20,0.9));border:1px solid rgba(63,140,255,0.25);font-size:12px}
+    .log-entry{margin-bottom:3px;color:var(--text-muted)}.log-entry:last-child{margin-bottom:0}.log-entry strong{color:var(--text);font-weight:500}
+    .tab-row{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+    .tab-button{padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,0.02);color:var(--text-muted);font-size:12px;cursor:pointer;transition:all .15s ease-out}
+    .tab-button:hover{border-color:var(--accent-soft);background:rgba(255,255,255,0.04);color:var(--text)}
+    .tab-button.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px rgba(63,140,255,0.25)}
+    .menu-view{flex:1;border-radius:10px;background:rgba(4,7,14,0.95);border:1px solid rgba(255,255,255,0.04);padding:10px 12px;overflow-y:auto}
+    .menu-section{margin-bottom:10px}.menu-section:last-child{margin-bottom:0}
+    .menu-section-title{font-size:13px;font-weight:500;margin-bottom:4px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.12em}
+    .menu-description{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--text);font-size:13px;cursor:pointer;transition:all .15s ease-out}
+    .btn:hover{border-color:var(--accent);background:var(--accent-soft)}
+    .btn:disabled{opacity:.4;cursor:default;border-color:var(--border);background:rgba(255,255,255,0.03)}
+    .btn-primary{background:linear-gradient(135deg,#3f8cff,#9f7bff);border-color:#5f9eff;color:#fff;box-shadow:0 4px 14px rgba(63,140,255,0.4)}
+    .btn-danger{background:rgba(255,75,106,0.12);border-color:var(--danger);color:#ffd3dd}
+    .btn-small{padding:2px 7px;font-size:11px;border-radius:999px}
+    .inline-controls{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+    .progress-bar{width:100%;height:6px;border-radius:999px;background:rgba(255,255,255,0.04);overflow:hidden;position:relative}
+    .progress-fill{height:100%;width:0;background:linear-gradient(90deg,#3f8cff,#4fd9b3);transition:width .1s linear}
+    .bank-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .bank-list{max-height:150px;overflow-y:auto;padding:4px 6px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);font-size:12px}
+    .bank-item{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+    .combat-panel{border-radius:8px;padding:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);font-size:13px}
+    .combat-row{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px}
+    .combat-entity{flex:1;border-radius:8px;padding:6px 8px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.04)}
+    .entity-name{font-size:13px;font-weight:500;margin-bottom:2px}
+    .entity-stat{font-size:12px;color:var(--text-muted)}
+    .combat-controls{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+    .armory-search-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+    .armory-search-input{flex:1;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(0,0,0,0.4);color:var(--text);font-size:12px;outline:none}
+    .armory-search-input::placeholder{color:var(--text-muted)}
+    .armory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
+    .armory-card{border-radius:8px;padding:6px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);display:flex;flex-direction:column;gap:4px}
+    .armory-card-header{display:flex;justify-content:space-between;align-items:baseline;gap:4px}
+    .armory-card-name{font-size:12px}
+    .armory-card-tier{font-size:11px;color:var(--text-muted)}
+    .armory-card-meta{font-size:11px;color:var(--text-muted);text-align:right}
+    .armory-card-ingredients{font-size:11px;color:var(--text-muted)}
+    .armory-card-footer{display:flex;justify-content:space-between;align-items:center;gap:4px}
+    .armory-status{font-size:10px;color:var(--text-muted);text-align:right}
+    .mining-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
+    .mining-card{border-radius:8px;padding:6px 8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);display:flex;flex-direction:column;gap:4px}
+    .mining-card-header{display:flex;justify-content:space-between;align-items:baseline;gap:4px}
+    .mining-card-name{font-size:12px}
+    .mining-card-meta{font-size:11px;color:var(--text-muted)}
+    .mining-card-footer{display:flex;justify-content:space-between;align-items:center;gap:4px}
+    .mining-status{font-size:10px;color:var(--text-muted);text-align:right}
+    .box-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .box-card{display:flex;flex-direction:column;align-items:center;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);font-size:12px}
+    .box-count{font-size:12px;color:var(--text-muted);margin-top:4px}
+    .box-chance{font-size:11px;color:var(--text-muted);margin-top:4px}
+    ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:rgba(0,0,0,0.3)}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:999px}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Adventurer</div>
+          <div class="tiny-muted" id="player-name-label">Name: <strong>Adventurer</strong></div>
+        </div>
+        <div class="pill">Player Info</div>
+      </div>
+      <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">
+        <button class="btn btn-small" id="manual-save-btn" title="Save game">💾 Save</button>
+        <button class="btn btn-small" id="reset-btn" title="Reset game">🔄 Reset</button>
+        <span class="tiny-muted" id="save-status" style="display:flex;align-items:center;margin-left:4px"></span>
+      </div>
+      <hr />
+      <div class="left-column-section">
+        <div class="section-title">Vitals & Currency</div>
+        <div class="hp-row">
+          <div class="hp-bar-wrapper"><div id="hp-bar" class="hp-bar-fill" style="width:100%"></div></div>
+          <div id="hp-text" class="hp-text">HP 30 / 30</div>
+        </div>
+        <div class="currency-row">
+          <span><span class="dot"></span> <span id="gold-text">Gold: 20</span></span>
+          <span>Bank: <span id="bank-gold-text">0</span></span>
+        </div>
+      </div>
+
+      <div class="left-column-section">
+        <div class="section-title">Skills</div>
+        <div class="stats-grid" id="stats-grid"></div>
+      </div>
+
+      <div class="left-column-section">
+        <div class="inventory-header-row">
+          <div class="section-title">Inventory</div>
+          <div id="inventory-capacity" class="inventory-capacity">0 / 20</div>
+        </div>
+        <div id="inventory-list" class="inventory-list"></div>
+      </div>
+
+      <div class="left-column-section" style="flex:1;min-height:0">
+        <div class="section-title">Action Log</div>
+        <div id="log" class="log"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">World</div>
+          <div class="tiny-muted" id="location-label">Location: Town</div>
+        </div>
+        <div class="pill" id="game-time">Day 1 • 00:00</div>
+      </div>
+      <hr />
+      <div class="tab-row">
+        <button class="tab-button active" data-menu="town">Town</button>
+        <button class="tab-button" data-menu="inn">Inn</button>
+        <button class="tab-button" data-menu="mine">Mining</button>
+        <button class="tab-button" data-menu="smelter">Smelter</button>
+        <button class="tab-button" data-menu="armory">Armory</button>
+        <button class="tab-button" data-menu="bank">Bank</button>
+        <button class="tab-button" data-menu="explore">Explore</button>
+      </div>
+      <div id="menu-container" class="menu-view"></div>
+    </div>
+  </div>
+
+  <script>
+    /* CORE STATE */
+    const gameState = {
+      timeMinutes: 0,
+      player: {
+        name: "Adventurer",
+        maxHp: 30,
+        hp: 30,
+        gold: 20,
+        inventoryCapacity: 20,
+        inventory: [],
+        stats: {
+          Strength: { level: 1, xp: 0 },
+          Attack: { level: 1, xp: 0 },
+          Endurance: { level: 1, xp: 0 },
+          Mining: { level: 1, xp: 0 },
+          Smelting: { level: 1, xp: 0 },
+          Smithing: { level: 1, xp: 0 }
+        }
+      },
+      bank: { gold: 0, items: [] },
+      mining: {
+        ores: [
+          { id: "copper_ore", name: "Copper Ore", baseTime: 4000, levelReq: 1, xp: 5 },
+          { id: "tin_ore", name: "Tin Ore", baseTime: 4500, levelReq: 1, xp: 6 },
+          { id: "iron_ore", name: "Iron Ore", baseTime: 6500, levelReq: 15, xp: 15 },
+          { id: "coal", name: "Coal", baseTime: 7000, levelReq: 30, xp: 25 }
+        ],
+        activeOreId: null, progress: 0, isMining: false, lastTick: null
+      },
+      smelting: {
+        ingots: [
+          { id: "copper_ingot", name: "Copper Ingot", baseTime: 3500, levelReq: 1, xp: 8, ingredients: [{ id: "copper_ore", name: "Copper Ore", qty: 1 }] },
+          { id: "bronze_ingot", name: "Bronze Ingot", baseTime: 4500, levelReq: 1, xp: 12, ingredients: [{ id: "copper_ore", name: "Copper Ore", qty: 1 }, { id: "tin_ore", name: "Tin Ore", qty: 1 }] },
+          { id: "iron_ingot", name: "Iron Ingot", baseTime: 5500, levelReq: 15, xp: 20, ingredients: [{ id: "iron_ore", name: "Iron Ore", qty: 1 }], successChance: 0.5 },
+          { id: "steel_ingot", name: "Steel Ingot", baseTime: 7000, levelReq: 30, xp: 35, ingredients: [{ id: "iron_ore", name: "Iron Ore", qty: 1 }, { id: "coal", name: "Coal", qty: 2 }] }
+        ],
+        activeIngotId: null, progress: 0, isSmelting: false, lastTick: null
+      },
+      armory: {
+        recipes: [
+          /* gear recipes... (same as before) */
+          { id: "copper_dagger", name: "Copper Dagger", tier: "Copper", ingotId: "copper_ingot", ingots: 1, levelReq: 1, xp: 5, type: "Weapon", baseTime: 3000 },
+          { id: "copper_sword", name: "Copper Sword", tier: "Copper", ingotId: "copper_ingot", ingots: 2, levelReq: 3, xp: 10, type: "Weapon", baseTime: 4000 },
+          { id: "copper_helm", name: "Copper Helm", tier: "Copper", ingotId: "copper_ingot", ingots: 2, levelReq: 4, xp: 12, type: "Armor", baseTime: 4500 },
+          { id: "copper_chainbody", name: "Copper Chainbody", tier: "Copper", ingotId: "copper_ingot", ingots: 3, levelReq: 6, xp: 18, type: "Armor", baseTime: 5500 },
+          { id: "copper_platelegs", name: "Copper Platelegs", tier: "Copper", ingotId: "copper_ingot", ingots: 2, levelReq: 5, xp: 14, type: "Armor", baseTime: 5000 },
+          { id: "copper_kiteshield", name: "Copper Kiteshield", tier: "Copper", ingotId: "copper_ingot", ingots: 3, levelReq: 7, xp: 20, type: "Shield", baseTime: 6000 },
+          { id: "copper_boots", name: "Copper Boots", tier: "Copper", ingotId: "copper_ingot", ingots: 1, levelReq: 2, xp: 6, type: "Armor", baseTime: 3500 },
+
+          { id: "bronze_dagger", name: "Bronze Dagger", tier: "Bronze", ingotId: "bronze_ingot", ingots: 1, levelReq: 5, xp: 12, type: "Weapon", baseTime: 4000 },
+          { id: "bronze_sword", name: "Bronze Sword", tier: "Bronze", ingotId: "bronze_ingot", ingots: 2, levelReq: 8, xp: 18, type: "Weapon", baseTime: 5000 },
+          { id: "bronze_helm", name: "Bronze Helm", tier: "Bronze", ingotId: "bronze_ingot", ingots: 2, levelReq: 9, xp: 20, type: "Armor", baseTime: 5500 },
+          { id: "bronze_chainbody", name: "Bronze Chainbody", tier: "Bronze", ingotId: "bronze_ingot", ingots: 3, levelReq: 11, xp: 26, type: "Armor", baseTime: 6500 },
+          { id: "bronze_platelegs", name: "Bronze Platelegs", tier: "Bronze", ingotId: "bronze_ingot", ingots: 2, levelReq: 10, xp: 22, type: "Armor", baseTime: 6000 },
+          { id: "bronze_kiteshield", name: "Bronze Kiteshield", tier: "Bronze", ingotId: "bronze_ingot", ingots: 3, levelReq: 12, xp: 28, type: "Shield", baseTime: 7000 },
+          { id: "bronze_boots", name: "Bronze Boots", tier: "Bronze", ingotId: "bronze_ingot", ingots: 1, levelReq: 6, xp: 14, type: "Armor", baseTime: 4500 },
+
+          { id: "iron_dagger", name: "Iron Dagger", tier: "Iron", ingotId: "iron_ingot", ingots: 1, levelReq: 15, xp: 30, type: "Weapon", baseTime: 5500 },
+          { id: "iron_sword", name: "Iron Sword", tier: "Iron", ingotId: "iron_ingot", ingots: 2, levelReq: 18, xp: 40, type: "Weapon", baseTime: 6500 },
+          { id: "iron_helm", name: "Iron Helm", tier: "Iron", ingotId: "iron_ingot", ingots: 2, levelReq: 19, xp: 42, type: "Armor", baseTime: 7000 },
+          { id: "iron_chainbody", name: "Iron Chainbody", tier: "Iron", ingotId: "iron_ingot", ingots: 3, levelReq: 21, xp: 50, type: "Armor", baseTime: 8000 },
+          { id: "iron_platelegs", name: "Iron Platelegs", tier: "Iron", ingotId: "iron_ingot", ingots: 2, levelReq: 20, xp: 46, type: "Armor", baseTime: 7500 },
+          { id: "iron_kiteshield", name: "Iron Kiteshield", tier: "Iron", ingotId: "iron_ingot", ingots: 3, levelReq: 23, xp: 55, type: "Shield", baseTime: 8500 },
+          { id: "iron_boots", name: "Iron Boots", tier: "Iron", ingotId: "iron_ingot", ingots: 1, levelReq: 16, xp: 32, type: "Armor", baseTime: 6000 },
+
+          { id: "steel_dagger", name: "Steel Dagger", tier: "Steel", ingotId: "steel_ingot", ingots: 1, levelReq: 30, xp: 60, type: "Weapon", baseTime: 7000 },
+          { id: "steel_sword", name: "Steel Sword", tier: "Steel", ingotId: "steel_ingot", ingots: 2, levelReq: 33, xp: 72, type: "Weapon", baseTime: 8000 },
+          { id: "steel_helm", name: "Steel Helm", tier: "Steel", ingotId: "steel_ingot", ingots: 2, levelReq: 34, xp: 75, type: "Armor", baseTime: 8500 },
+          { id: "steel_chainbody", name: "Steel Chainbody", tier: "Steel", ingotId: "steel_ingot", ingots: 3, levelReq: 36, xp: 84, type: "Armor", baseTime: 9500 },
+          { id: "steel_platelegs", name: "Steel Platelegs", tier: "Steel", ingotId: "steel_ingot", ingots: 2, levelReq: 35, xp: 80, type: "Armor", baseTime: 9000 },
+          { id: "steel_kiteshield", name: "Steel Kiteshield", tier: "Steel", ingotId: "steel_ingot", ingots: 3, levelReq: 38, xp: 90, type: "Shield", baseTime: 10000 },
+          { id: "steel_boots", name: "Steel Boots", tier: "Steel", ingotId: "steel_ingot", ingots: 1, levelReq: 31, xp: 64, type: "Armor", baseTime: 7500 },
+
+          /* Box recipes */
+          { id: "box_copper", name: "Copper Box", tier: "Copper", levelReq: 1, xp: 3, type: "Box", baseTime: 2500,
+            ingredients: [{ id: "copper_ingot", name: "Copper Ingot", qty: 1 }, { id: "leather", name: "Leather", qty: 1 }] },
+          { id: "box_tin", name: "Tin Box", tier: "Tin", levelReq: 2, xp: 3, type: "Box", baseTime: 2500,
+            ingredients: [{ id: "tin_ore", name: "Tin Ore", qty: 2 }, { id: "leather", name: "Leather", qty: 1 }] },
+          { id: "box_bronze", name: "Bronze Box", tier: "Bronze", levelReq: 5, xp: 6, type: "Box", baseTime: 3000,
+            ingredients: [{ id: "bronze_ingot", name: "Bronze Ingot", qty: 1 }, { id: "leather", name: "Leather", qty: 1 }] },
+          { id: "box_iron", name: "Iron Box", tier: "Iron", levelReq: 15, xp: 12, type: "Box", baseTime: 4000,
+            ingredients: [{ id: "iron_ingot", name: "Iron Ingot", qty: 1 }, { id: "leather", name: "Leather", qty: 2 }] },
+          { id: "box_steel", name: "Steel Box", tier: "Steel", levelReq: 30, xp: 20, type: "Box", baseTime: 5000,
+            ingredients: [{ id: "steel_ingot", name: "Steel Ingot", qty: 1 }, { id: "leather", name: "Leather", qty: 3 }] }
+        ],
+        activeRecipeId: null,
+        progress: 0,
+        isCrafting: false,
+        lastTick: null,
+        search: ""
+      },
+      combat: { inCombat: false, enemy: null, playerTurn: true },
+      currentMenu: "town",
+      log: []
+    };
+
+    /* UTILITIES */
+    function log(msg){
+      const now = new Date();
+      const t = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      gameState.log.push(`[${t}] ${msg}`);
+      if(gameState.log.length>200) gameState.log.shift();
+      renderLog();
+    }
+    function getStat(name){ return gameState.player.stats[name]; }
+    function xpForNextLevel(level){ return 50 + Math.floor(Math.pow(level-1,1.5)*30); }
+    function addXp(statName, amount){
+      const s = getStat(statName);
+      if(!s) return;
+      s.xp += amount;
+      let leveled=false;
+      while(s.xp >= xpForNextLevel(s.level)){
+        s.xp -= xpForNextLevel(s.level);
+        s.level++;
+        leveled=true;
+      }
+      if(leveled){
+        log(`<strong>${statName}</strong> level increased to <strong>${s.level}</strong>!`);
+        if(statName==="Endurance"){ gameState.player.maxHp += 5; gameState.player.hp = gameState.player.maxHp; log(`Max HP is now ${gameState.player.maxHp}.`); }
+      }
+      renderStats();
+    }
+    function addItemToCollection(coll,id,name,qty){
+      const ex = coll.find(i=>i.id===id);
+      if(ex) ex.quantity += qty;
+      else coll.push({id,name,quantity:qty});
+    }
+    function removeItemFromCollection(coll,id,qty){
+      const idx = coll.findIndex(i=>i.id===id);
+      if(idx===-1) return false;
+      if(coll[idx].quantity < qty) return false;
+      coll[idx].quantity -= qty;
+      if(coll[idx].quantity === 0) coll.splice(idx,1);
+      return true;
+    }
+    function inventoryCount(){ return gameState.player.inventory.reduce((s,i)=>s+i.quantity,0); }
+    function addItemToInventory(id,name,qty){
+      const after = inventoryCount()+qty;
+      if(after > gameState.player.inventoryCapacity){ log("Your inventory is full. You cannot hold more items."); return false; }
+      addItemToCollection(gameState.player.inventory,id,name,qty);
+      renderInventory();
+      return true;
+    }
+    function hasIngredients(ingredients){
+      return ingredients.every(req=>{
+        const it = gameState.player.inventory.find(i=>i.id===req.id);
+        return it && it.quantity >= req.qty;
+      });
+    }
+    function consumeIngredients(ingredients){
+      for(const req of ingredients){
+        if(!removeItemFromCollection(gameState.player.inventory, req.id, req.qty)) return false;
+      }
+      renderInventory();
+      return true;
+    }
+    function formatTimeFromMinutes(mins){ const day = 1 + Math.floor(mins/(24*60)); const dayMins = mins%(24*60); const h=String(Math.floor(dayMins/60)).padStart(2,'0'); const m=String(dayMins%60).padStart(2,'0'); return `Day ${day} • ${h}:${m}`; }
+    function randomInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    /* RENDER */
+    const statsGridEl = document.getElementById("stats-grid");
+    const inventoryListEl = document.getElementById("inventory-list");
+    const inventoryCapacityEl = document.getElementById("inventory-capacity");
+    const logEl = document.getElementById("log");
+    const hpBarEl = document.getElementById("hp-bar");
+    const hpTextEl = document.getElementById("hp-text");
+    const goldTextEl = document.getElementById("gold-text");
+    const bankGoldTextEl = document.getElementById("bank-gold-text");
+    const menuContainerEl = document.getElementById("menu-container");
+    const locationLabelEl = document.getElementById("location-label");
+    const gameTimeEl = document.getElementById("game-time");
+
+    function renderVitals(){ const p = gameState.player; const hpPercent = Math.max(0,Math.min(100,(p.hp/p.maxHp)*100)); hpBarEl.style.width = hpPercent + "%"; hpTextEl.textContent = `HP ${p.hp} / ${p.maxHp}`; goldTextEl.textContent = `Gold: ${p.gold}`; bankGoldTextEl.textContent = `${gameState.bank.gold}`; }
+    function renderStats(){
+      statsGridEl.innerHTML = "";
+      Object.entries(gameState.player.stats).forEach(([name,data])=>{
+        const wrapper = document.createElement("div"); wrapper.className = "stat-row";
+        const top = document.createElement("div"); top.className="stat-top";
+        const left = document.createElement("div"); left.className="stat-label"; left.textContent = name;
+        const right = document.createElement("div"); right.className="stat-value"; right.textContent = `Lv. ${data.level}`;
+        top.appendChild(left); top.appendChild(right);
+        const xpBar = document.createElement("div"); xpBar.className="xp-bar";
+        const xpFill = document.createElement("div"); xpFill.className="xp-fill";
+        const req = xpForNextLevel(data.level);
+        const pct = Math.min(100, (data.xp/req)*100);
+        xpFill.style.width = pct + "%"; xpBar.appendChild(xpFill);
+        wrapper.appendChild(top); wrapper.appendChild(xpBar); statsGridEl.appendChild(wrapper);
+      });
+    }
+    function renderInventory(){
+      inventoryCapacityEl.textContent = `${inventoryCount()} / ${gameState.player.inventoryCapacity}`;
+      inventoryListEl.innerHTML = "";
+      const inv = gameState.player.inventory;
+      if(inv.length===0){ const empty = document.createElement("div"); empty.className="inventory-empty"; empty.textContent="Your inventory is empty."; inventoryListEl.appendChild(empty); return; }
+      inv.forEach(item=>{
+        const row = document.createElement("div"); row.className="inventory-item";
+        const nameEl = document.createElement("div"); nameEl.className="inventory-item-name"; nameEl.textContent = item.name;
+        const qtyEl = document.createElement("div"); qtyEl.className="inventory-item-qty"; qtyEl.textContent = "×" + item.quantity;
+        row.appendChild(nameEl); row.appendChild(qtyEl); inventoryListEl.appendChild(row);
+      });
+    }
+    function renderLog(){ logEl.innerHTML = ""; gameState.log.slice().reverse().forEach(entry=>{ const p=document.createElement("div"); p.className="log-entry"; p.innerHTML = entry; logEl.appendChild(p); }); }
+    function renderGameTime(){ gameTimeEl.textContent = formatTimeFromMinutes(gameState.timeMinutes); }
+
+    function setMenu(menuId){
+      // Cancel any active actions when switching menus
+      if(gameState.mining.isMining){
+        const ore = gameState.mining.ores.find(o=>o.id===gameState.mining.activeOreId);
+        log(`You stop mining ${ore ? ore.name : ""}...`);
+        gameState.mining.isMining = false;
+        gameState.mining.activeOreId = null;
+        gameState.mining.progress = 0;
+      }
+      if(gameState.smelting.isSmelting){
+        const ingot = gameState.smelting.ingots.find(i=>i.id===gameState.smelting.activeIngotId);
+        log(`You stop smelting ${ingot ? ingot.name : ""}...`);
+        gameState.smelting.isSmelting = false;
+        gameState.smelting.activeIngotId = null;
+        gameState.smelting.progress = 0;
+      }
+      if(gameState.armory.isCrafting){
+        const recipe = gameState.armory.recipes.find(r=>r.id===gameState.armory.activeRecipeId);
+        log(`You stop crafting ${recipe ? recipe.name : ""}...`);
+        gameState.armory.isCrafting = false;
+        gameState.armory.activeRecipeId = null;
+        gameState.armory.progress = 0;
+      }
+      
+      gameState.currentMenu = menuId;
+      document.querySelectorAll(".tab-button").forEach(btn=>btn.classList.toggle("active", btn.dataset.menu === menuId));
+      locationLabelEl.textContent = "Location: " + menuId.charAt(0).toUpperCase() + menuId.slice(1);
+      renderMenu();
+    }
+    function renderMenu(){
+      const m = gameState.currentMenu;
+      if(m==="town") renderTownMenu();
+      else if(m==="inn") renderInnMenu();
+      else if(m==="mine") renderMiningMenu();
+      else if(m==="smelter") renderSmelterMenu();
+      else if(m==="armory") renderArmoryMenu();
+      else if(m==="bank") renderBankMenu();
+      else if(m==="explore") renderExploreMenu();
+    }
+
+    /* MENUS */
+    function renderTownMenu(){
+      menuContainerEl.innerHTML = `
+        <div class="menu-section">
+          <div class="menu-section-title">Town Square</div>
+          <div class="menu-description">The heart of the settlement. Lanterns flicker in the cool night air as townsfolk drift between the inn, bank, smelter, armory, and mines.</div>
+          <div class="inline-controls">
+            <button class="btn" data-action="go-inn">Rest at the Inn (5 gold)</button>
+            <button class="btn" data-action="go-mine">Visit the Mines</button>
+            <button class="btn" data-action="go-smelter">Visit the Smelter</button>
+            <button class="btn" data-action="go-armory">Visit the Armory</button>
+            <button class="btn" data-action="go-bank">Visit the Bank</button>
+            <button class="btn" data-action="go-explore">Explore the Wilds</button>
+          </div>
+        </div>
+        <div class="menu-section"><div class="tiny-muted">Use the buttons above or the tabs to move between activities. Only one activity menu is visible at a time.</div></div>`;
+      menuContainerEl.querySelector('[data-action="go-inn"]').onclick = ()=>setMenu("inn");
+      menuContainerEl.querySelector('[data-action="go-mine"]').onclick = ()=>setMenu("mine");
+      menuContainerEl.querySelector('[data-action="go-smelter"]').onclick = ()=>setMenu("smelter");
+      menuContainerEl.querySelector('[data-action="go-armory"]').onclick = ()=>setMenu("armory");
+      menuContainerEl.querySelector('[data-action="go-bank"]').onclick = ()=>setMenu("bank");
+      menuContainerEl.querySelector('[data-action="go-explore"]').onclick = ()=>setMenu("explore");
+    }
+
+    function renderInnMenu(){
+      const canAfford = gameState.player.gold >= 5;
+      menuContainerEl.innerHTML = `
+        <div class="menu-section">
+          <div class="menu-section-title">Quiet Ember Inn</div>
+          <div class="menu-description">A soft golden glow spills from the windows. The air smells of stew and smoke, and a weary innkeeper nods in greeting.</div>
+          <div class="inline-controls">
+            <button class="btn btn-primary" id="rest-btn" ${canAfford?"":"disabled"}>Rest (5 gold)</button>
+            <div class="tiny-muted">Resting fully restores your HP and trains <strong>Endurance</strong>.</div>
+          </div>
+        </div>`;
+      document.getElementById("rest-btn").onclick = ()=>{
+        if(gameState.player.gold < 5){ log("You don't have enough gold to rest."); renderInnMenu(); return; }
+        gameState.player.gold -=5; gameState.player.hp = gameState.player.maxHp; gameState.timeMinutes += 60;
+        addXp("Endurance", 8); renderVitals(); renderGameTime(); log("You rest at the inn and feel restored."); renderInnMenu();
+      };
+    }
+
+    /* MINING (grid) */
+    function renderMiningMenu(){
+      const mining = gameState.mining; const miningLevel = getStat("Mining").level;
+      let html = `<div class="menu-section"><div class="menu-section-title">Mines</div><div class="menu-description">Shafts descend into the earth. Focus on one ore at a time.</div><div class="tiny-muted">Mining Lv. ${miningLevel}</div></div><div class="menu-section"><div class="menu-section-title">Ores</div><div class="mining-grid">`;
+      mining.ores.forEach(ore=>{
+        const active = mining.activeOreId===ore.id && mining.isMining;
+        const levelReqMet = miningLevel >= ore.levelReq;
+        const invFull = inventoryCount() >= gameState.player.inventoryCapacity;
+        const progressPct = (mining.activeOreId===ore.id) ? (mining.progress*100) : 0;
+        let statusText; if(!levelReqMet) statusText = `Need Mining ${ore.levelReq}`; else if(invFull) statusText = `Inventory full`; else if(active) statusText = `Currently mining...`; else statusText = `Ready`;
+        const disabledAttr = (!levelReqMet || invFull)?"disabled":"";
+        let buttonHtml = active ? `<button class="btn btn-danger btn-small" data-action="cancel-mine">Cancel</button>` : `<button class="btn btn-small" data-action="mine" data-ore="${ore.id}" ${disabledAttr}>Mine</button>`;
+        html += `<div class="mining-card" data-ore-id="${ore.id}"><div class="mining-card-header"><div><div class="mining-card-name">${ore.name}</div><div class="mining-card-meta">Lv. ${ore.levelReq} • ~${(ore.baseTime/1000).toFixed(1)}s • ${ore.xp} XP</div></div></div><div class="progress-bar"><div class="progress-fill" style="width:${progressPct}%" data-progress="${ore.id}"></div></div><div class="mining-card-footer">${buttonHtml}<div class="mining-status">${statusText}</div></div></div>`;
+      });
+      html += `</div></div><div class="menu-section"><div class="tiny-muted">Each ore takes time to gather. Progress continues while the game runs.</div></div>`;
+      menuContainerEl.innerHTML = html;
+      menuContainerEl.querySelectorAll('[data-action="mine"]').forEach(btn=>btn.onclick=()=>startMining(btn.dataset.ore));
+      menuContainerEl.querySelectorAll('[data-action="cancel-mine"]').forEach(btn=>btn.onclick=cancelMining);
+    }
+
+    /* SMELTER (grid like mining) */
+    function renderSmelterMenu(){
+      const smelting = gameState.smelting; const smeltLevel = getStat("Smelting").level;
+      let html = `<div class="menu-section"><div class="menu-section-title">Smelter</div><div class="menu-description">Furnaces roar, turn ore into ingots.</div><div class="tiny-muted">Smelting Lv. ${smeltLevel}</div></div><div class="menu-section"><div class="menu-section-title">Ingot Recipes</div><div class="mining-grid">`;
+      smelting.ingots.forEach(ingot=>{
+        const active = smelting.activeIngotId===ingot.id && smelting.isSmelting;
+        const levelReqMet = smeltLevel >= ingot.levelReq;
+        const invFull = inventoryCount() >= gameState.player.inventoryCapacity;
+        const haveMats = hasIngredients(ingot.ingredients);
+        let statusText; if(!levelReqMet) statusText=`Need Smelting ${ingot.levelReq}`; else if(!haveMats) statusText=`Missing ingredients`; else if(invFull) statusText=`Inventory full`; else if(active) statusText=`Currently smelting...`; else statusText=`Ready`;
+        const disabled = (!levelReqMet || !haveMats || invFull)?"disabled":"";
+        const progressPct = (smelting.activeIngotId===ingot.id)?(smelting.progress*100):0;
+        const ingredientsDesc = ingot.ingredients.map(r=>`${r.qty}× ${r.name}`).join(" + ");
+        const successInfo = ingot.successChance && ingot.successChance < 1 ? ` • ~${Math.round(ingot.successChance*100)}% success` : "";
+        let buttonHtml = active ? `<button class="btn btn-danger btn-small" data-action="cancel-smelt">Cancel</button>` : `<button class="btn btn-small" data-action="smelt" data-ingot="${ingot.id}" ${disabled}>Smelt</button>`;
+        html += `<div class="mining-card" data-ingot-id="${ingot.id}"><div class="mining-card-header"><div><div class="mining-card-name">${ingot.name}</div><div class="mining-card-meta">Lv. ${ingot.levelReq} • ~${(ingot.baseTime/1000).toFixed(1)}s • ${ingot.xp} XP${successInfo}<br><span class="tiny-muted">${ingredientsDesc}</span></div></div></div><div class="progress-bar"><div class="progress-fill" style="width:${progressPct}%" data-smelt-progress="${ingot.id}"></div></div><div class="mining-card-footer">${buttonHtml}<div class="mining-status">${statusText}</div></div></div>`;
+      });
+      html += `</div></div><div class="menu-section"><div class="tiny-muted">Smelting consumes ore and grants <strong>Smelting</strong> XP. Progress continues in background.</div></div>`;
+      menuContainerEl.innerHTML = html;
+      menuContainerEl.querySelectorAll('[data-action="smelt"]').forEach(btn=>btn.onclick = ()=>startSmelting(btn.dataset.ingot));
+      menuContainerEl.querySelectorAll('[data-action="cancel-smelt"]').forEach(btn=>btn.onclick=cancelSmelting);
+    }
+
+    /* ARMORY (grid with search) */
+    function renderArmoryMenu(){
+      const smithLevel = getStat("Smithing").level;
+      const search = (gameState.armory.search || "").toLowerCase();
+
+      function getIngredientsForRecipe(r){
+        if(r.ingredients) return r.ingredients;
+        const ingot = gameState.smelting.ingots.find(i=>i.id===r.ingotId);
+        const out = [{ id: r.ingotId, name: ingot?ingot.name:r.ingotId, qty: r.ingots ?? 1 }];
+        if(["Armor","Shield"].includes(r.type)){
+          const leatherQty = r.tier === "Copper" ? 1 : r.tier === "Bronze" ? 2 : r.tier === "Iron"?3:4;
+          out.push({ id: "leather", name: "Leather", qty: leatherQty });
+        }
+        return out;
+      }
+
+      const filtered = gameState.armory.recipes.filter(r=>{
+        if(!search) return true;
+        const ingredients = getIngredientsForRecipe(r);
+        const ingredientsText = ingredients.map(req=>`${req.qty}x ${req.name}`).join(" ");
+        const hay = (r.name + " " + ingredientsText).toLowerCase();
+        return hay.includes(search);
+      });
+
+      let html = `<div class="menu-section"><div class="menu-section-title">Armory</div><div class="menu-description">Anvils line the walls, each scarred from use. Hammer bars into gear or craft boxes to capture creatures.</div><div class="armory-search-row"><input id="armory-search" class="armory-search-input" placeholder="Search gear or ingredient..." value="${escapeHtml(gameState.armory.search || "")}" /><span class="tiny-muted">Smithing Lv. ${smithLevel}</span></div></div><div class="menu-section"><div class="menu-section-title">Smithable Gear & Boxes</div><div class="armory-grid">`;
+
+      if(filtered.length === 0) {
+        html += `<div class="tiny-muted">No recipes match your search.</div>`;
+      } else {
+        filtered.forEach(r=>{
+          const ingredients = getIngredientsForRecipe(r);
+          const active = gameState.armory.activeRecipeId===r.id && gameState.armory.isCrafting;
+          const levelReqMet = smithLevel >= (r.levelReq || 0);
+          const invFull = inventoryCount() >= gameState.player.inventoryCapacity;
+          const haveMats = hasIngredients(ingredients);
+          let statusText = !levelReqMet ? `Need Smithing ${r.levelReq}` : !haveMats ? `Missing ingredients` : invFull ? `Inventory full` : active ? `Currently crafting...` : `Ready`;
+          const disabled = (!levelReqMet || !haveMats || invFull) ? "disabled" : "";
+          const ingredientsDesc = ingredients.map(req=>`${req.qty}× ${req.name}`).join(" + ");
+          const progressPct = (gameState.armory.activeRecipeId===r.id) ? (gameState.armory.progress*100) : 0;
+          const baseTimeSeconds = (r.baseTime / 1000).toFixed(1);
+          let buttonHtml = active ? `<button class="btn btn-danger btn-small" data-action="cancel-craft">Cancel</button>` : `<button class="btn btn-small" data-action="smith" data-gear="${r.id}" ${disabled}>Smith</button>`;
+          html += `<div class="armory-card" data-gear-id="${r.id}"><div class="armory-card-header"><div><div class="armory-card-name">${r.name}</div><div class="armory-card-tier">${r.tier ? r.tier + " "+ r.type : (r.type || "")}</div></div><div class="armory-card-meta">Lv. ${r.levelReq || 0} • ~${baseTimeSeconds}s<br>${r.xp || 0} XP</div></div><div class="armory-card-ingredients">${ingredientsDesc}</div><div class="progress-bar"><div class="progress-fill" style="width:${progressPct}%" data-craft-progress="${r.id}"></div></div><div class="armory-card-footer">${buttonHtml}<div class="armory-status">${statusText}</div></div></div>`;
+        });
+      }
+
+      html += `</div></div><div class="menu-section"><div class="tiny-muted">Smithing consumes ingredients to create items and grants <strong>Smithing</strong> XP. Boxes can be used in combat to attempt to tame creatures.</div></div>`;
+      menuContainerEl.innerHTML = html;
+
+      // Attach input handler that preserves caret/selection across re-renders
+      const searchEl = document.getElementById("armory-search");
+      if(searchEl){
+        searchEl.addEventListener("input", (e) => {
+          // Save caret/selection
+          const selStart = e.target.selectionStart;
+          const selEnd = e.target.selectionEnd;
+          // Update state
+          gameState.armory.search = e.target.value;
+          // Re-render
+          renderArmoryMenu();
+          // Restore focus & caret after rendering
+          const newInput = document.getElementById("armory-search");
+          if(newInput){
+            newInput.focus();
+            // Try to restore selection positions (clamped)
+            const len = newInput.value.length;
+            const s = Math.min(selStart ?? 0, len);
+            const t = Math.min(selEnd ?? s, len);
+            try { newInput.setSelectionRange(s, t); } catch (err) { /* ignore if not supported */ }
+          }
+        });
+      }
+
+      menuContainerEl.querySelectorAll('[data-action="smith"]').forEach(btn=>btn.onclick = ()=>startCrafting(btn.dataset.gear));
+      menuContainerEl.querySelectorAll('[data-action="cancel-craft"]').forEach(btn=>btn.onclick=cancelCrafting);
+    }
+
+    // helper to escape value into attribute safely
+    function escapeHtml(str){
+      if(!str) return "";
+      return String(str).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    /* BANK */
+    function renderBankMenu(){
+      const bank = gameState.bank; const inv = gameState.player.inventory;
+      let html = `<div class="menu-section"><div class="menu-section-title">Bank of Emberfall</div><div class="menu-description">A quiet clerk watches over rows of lockboxes. Store items and coins.</div></div>
+      <div class="menu-section"><div class="menu-section-title">Coins</div><div class="inline-controls"><button class="btn btn-small" id="deposit-10">Deposit 10 gold</button><button class="btn btn-small" id="withdraw-10">Withdraw 10 gold</button><div class="tiny-muted">Pouch: ${gameState.player.gold} • Bank: ${bank.gold}</div></div></div>
+      <div class="menu-section"><div class="menu-section-title">Items</div><div class="bank-columns"><div><div class="tiny-muted">Inventory</div><div class="bank-list" id="bank-inv-list">`;
+      if(inv.length===0) html += `<div class="tiny-muted">No items to deposit.</div>`; else inv.forEach(item=> html += `<div class="bank-item"><span>${item.name} ×${item.quantity}</span><span><button class="btn btn-small" data-action="deposit-one" data-id="${item.id}">+1</button><button class="btn btn-small" data-action="deposit-all" data-id="${item.id}">All</button></span></div>`);
+      html += `</div></div><div><div class="tiny-muted">Bank Storage</div><div class="bank-list" id="bank-item-list">`;
+      if(bank.items.length===0) html += `<div class="tiny-muted">No stored items.</div>`; else bank.items.forEach(item=> html += `<div class="bank-item"><span>${item.name} ×${item.quantity}</span><span><button class="btn btn-small" data-action="withdraw-one" data-id="${item.id}">-1</button><button class="btn btn-small" data-action="withdraw-all" data-id="${item.id}">All</button></span></div>`);
+      html += `</div></div></div></div>`;
+      menuContainerEl.innerHTML = html;
+
+      document.getElementById("deposit-10").onclick = ()=>{
+        if(gameState.player.gold <= 0){ log("You have no gold to deposit."); return; }
+        const amount = Math.min(10, gameState.player.gold); gameState.player.gold -= amount; gameState.bank.gold += amount; renderVitals(); renderBankMenu(); log(`Deposited ${amount} gold into the bank.`);
+      };
+      document.getElementById("withdraw-10").onclick = ()=>{
+        if(gameState.bank.gold <= 0){ log("The bank holds no gold for you to withdraw."); return; }
+        const amount = Math.min(10, gameState.bank.gold); gameState.bank.gold -= amount; gameState.player.gold += amount; renderVitals(); renderBankMenu(); log(`Withdrew ${amount} gold from the bank.`);
+      };
+
+      menuContainerEl.querySelectorAll('[data-action="deposit-one"]').forEach(btn=>btn.onclick = ()=>{
+        const id = btn.dataset.id;
+        if(removeItemFromCollection(gameState.player.inventory, id, 1)){
+          const itemName = (gameState.bank.items.find(i=>i.id===id) || { name: id }).name;
+          addItemToCollection(gameState.bank.items, id, itemName, 1);
+          renderInventory(); renderBankMenu(); log(`Deposited 1 ${itemName} into the bank.`);
+        }
+      });
+      menuContainerEl.querySelectorAll('[data-action="deposit-all"]').forEach(btn=>btn.onclick = ()=>{
+        const id = btn.dataset.id; const item = gameState.player.inventory.find(i=>i.id===id); if(!item) return; const qty = item.quantity; removeItemFromCollection(gameState.player.inventory,id,qty); addItemToCollection(gameState.bank.items,id,item.name,qty); renderInventory(); renderBankMenu(); log(`Deposited ${qty} ${item.name} into the bank.`);
+      });
+      menuContainerEl.querySelectorAll('[data-action="withdraw-one"]').forEach(btn=>btn.onclick = ()=>{
+        const id = btn.dataset.id; const item = gameState.bank.items.find(i=>i.id===id); if(!item) return; if(!addItemToInventory(id,item.name,1)) return; removeItemFromCollection(gameState.bank.items,id,1); renderBankMenu(); log(`Withdrew 1 ${item.name} from the bank.`);
+      });
+      menuContainerEl.querySelectorAll('[data-action="withdraw-all"]').forEach(btn=>btn.onclick = ()=>{
+        const id = btn.dataset.id; const item = gameState.bank.items.find(i=>i.id===id); if(!item) return; const available = gameState.player.inventoryCapacity - inventoryCount(); if(available <= 0){ log("Your inventory is full. Clear space before withdrawing."); return; } const take = Math.min(available, item.quantity); addItemToInventory(id, item.name, take); removeItemFromCollection(gameState.bank.items, id, take); renderBankMenu(); log(`Withdrew ${take} ${item.name} from the bank.`);
+      });
+    }
+
+    /* EXPLORE / COMBAT (with boxes & capture percents) */
+    function renderExploreMenu(){
+      const c = gameState.combat;
+      if(!c.inCombat){
+        menuContainerEl.innerHTML = `<div class="menu-section"><div class="menu-section-title">Wilderness</div><div class="menu-description">Fields fade into dark treelines. Strange beasts lurk among the rocks—including the occasional <strong>Mad Cow</strong>.</div><div class="inline-controls"><button class="btn btn-primary" id="start-encounter">Search for an encounter</button><div class="tiny-muted">Encounters reward <strong>Attack</strong>, <strong>Strength</strong>, and <strong>Endurance</strong> experience. Mad Cows may drop <strong>Leather</strong>.</div></div></div>`;
+        document.getElementById("start-encounter").onclick = ()=>{ startEncounter(); renderExploreMenu(); };
+        return;
+      }
+
+      const enemy = c.enemy; const player = gameState.player;
+      const boxItems = gameState.player.inventory.filter(i => i.id.startsWith("box_"));
+
+      // build boxHtml and include capture percent under name
+      let boxHtml = "";
+      if(boxItems.length>0){
+        boxHtml += `<div class="menu-section"><div class="menu-section-title">Capture Boxes</div><div class="tiny-muted">Use a box on your turn to attempt capture. Success depends on box tier, your stats, and the creature.</div><div class="box-list">`;
+        boxItems.forEach(b=>{
+          const chance = computeCaptureChance(b.id, enemy); // 0..1
+          const pct = Math.round(chance * 100);
+          boxHtml += `<div class="box-card"><div>${b.name}</div><div class="box-chance">Capture: ${pct}%</div><div class="box-count">×${b.quantity}</div><div style="margin-top:6px"><button class="btn btn-small use-box-btn" data-box="${b.id}">Use</button></div></div>`;
+        });
+        boxHtml += `</div></div>`;
+      } else {
+        boxHtml += `<div class="menu-section"><div class="tiny-muted">No boxes in inventory. Craft boxes in the Armory to capture creatures.</div></div>`;
+      }
+
+      menuContainerEl.innerHTML = `<div class="menu-section"><div class="menu-section-title">Encounter</div><div class="combat-panel">
+        <div class="combat-row">
+          <div class="combat-entity">
+            <div class="entity-name">You</div>
+            <div class="entity-stat">HP: ${player.hp} / ${player.maxHp}</div>
+            <div class="entity-stat">Attack Lv. ${getStat("Attack").level}</div>
+            <div class="entity-stat">Strength Lv. ${getStat("Strength").level}</div>
+          </div>
+          <div class="combat-entity">
+            <div class="entity-name">${enemy.name}</div>
+            <div class="entity-stat">HP: ${enemy.hp} / ${enemy.maxHp}</div>
+            <div class="entity-stat">Attack: ${enemy.attack}</div>
+          </div>
+        </div>
+        <div class="combat-controls">
+          <button class="btn btn-primary" id="attack-btn" ${c.playerTurn ? "" : "disabled"}>Attack</button>
+          <button class="btn" id="defend-btn" ${c.playerTurn ? "" : "disabled"}>Defend</button>
+          <button class="btn btn-danger" id="flee-btn">Attempt to Flee</button>
+        </div>
+        <div class="tiny-muted" style="margin-top:4px;">${c.playerTurn ? "Your turn." : "Enemy is acting..."}</div>
+      </div></div>` + boxHtml;
+
+      document.getElementById("attack-btn").onclick = ()=>{ playerAttack(); renderExploreMenu(); };
+      document.getElementById("defend-btn").onclick = ()=>{ playerDefend(); renderExploreMenu(); };
+      document.getElementById("flee-btn").onclick = ()=>{ attemptFlee(); renderExploreMenu(); };
+
+      menuContainerEl.querySelectorAll(".use-box-btn").forEach(btn=>{
+        btn.onclick = ()=>{
+          if(!gameState.combat.playerTurn){ log("You can only use a box on your turn."); return; }
+          useBox(btn.dataset.box);
+          renderExploreMenu();
+        };
+      });
+    }
+
+    /* MINING / SMELTING / SMITHING LOGIC */
+    function startMining(oreId){
+      const ore = gameState.mining.ores.find(o=>o.id===oreId); if(!ore) return;
+      const miningLevel = getStat("Mining").level;
+      if(miningLevel < ore.levelReq){ log(`You need Mining level ${ore.levelReq} to mine ${ore.name}.`); return; }
+      if(inventoryCount() >= gameState.player.inventoryCapacity){ log("Your inventory is full. Cannot start mining."); return; }
+      gameState.mining.activeOreId = oreId; gameState.mining.progress = 0; gameState.mining.isMining = true; gameState.mining.lastTick = performance.now(); log(`You begin mining ${ore.name}...`); if(gameState.currentMenu==="mine") renderMiningMenu();
+    }
+    function cancelMining(){
+      if(!gameState.mining.isMining) return;
+      const ore = gameState.mining.ores.find(o=>o.id===gameState.mining.activeOreId);
+      log(`You stop mining ${ore ? ore.name : ""}...`);
+      gameState.mining.isMining = false;
+      gameState.mining.activeOreId = null;
+      gameState.mining.progress = 0;
+      if(gameState.currentMenu==="mine") renderMiningMenu();
+    }
+    function updateMining(deltaMs){
+      const m = gameState.mining; if(!m.isMining || !m.activeOreId) return;
+      const ore = m.ores.find(o=>o.id===m.activeOreId); if(!ore) return;
+      m.progress += deltaMs / ore.baseTime;
+      if(m.progress >= 1){ m.progress = 0; const added = addItemToInventory(ore.id, ore.name, 1); if(added){ addXp("Mining", ore.xp); log(`You mine 1 × ${ore.name}.`); } else { m.isMining = false; log("You stop mining because your inventory is full."); } }
+      if(inventoryCount() >= gameState.player.inventoryCapacity) m.isMining = false;
+      if(gameState.currentMenu === "mine"){ const bar = menuContainerEl.querySelector(`.progress-fill[data-progress="${ore.id}"]`); if(bar) bar.style.width = (m.progress*100) + "%"; }
+    }
+
+    function startSmelting(ingotId){
+      const ingot = gameState.smelting.ingots.find(i=>i.id===ingotId); if(!ingot) return;
+      const smeltLevel = getStat("Smelting").level;
+      if(smeltLevel < ingot.levelReq){ log(`You need Smelting level ${ingot.levelReq} to smelt ${ingot.name}.`); return; }
+      if(!hasIngredients(ingot.ingredients)){ log(`You do not have the required ingredients to smelt ${ingot.name}.`); return; }
+      if(inventoryCount() >= gameState.player.inventoryCapacity){ log("Your inventory is full. Cannot smelt."); return; }
+      gameState.smelting.activeIngotId = ingotId; gameState.smelting.progress = 0; gameState.smelting.isSmelting = true; gameState.smelting.lastTick = performance.now(); log(`You begin smelting ${ingot.name}...`); if(gameState.currentMenu==="smelter") renderSmelterMenu();
+    }
+    function cancelSmelting(){
+      if(!gameState.smelting.isSmelting) return;
+      const ingot = gameState.smelting.ingots.find(i=>i.id===gameState.smelting.activeIngotId);
+      log(`You stop smelting ${ingot ? ingot.name : ""}...`);
+      gameState.smelting.isSmelting = false;
+      gameState.smelting.activeIngotId = null;
+      gameState.smelting.progress = 0;
+      if(gameState.currentMenu==="smelter") renderSmelterMenu();
+    }
+    function updateSmelting(deltaMs){
+      const s = gameState.smelting; if(!s.isSmelting || !s.activeIngotId) return;
+      const ingot = s.ingots.find(i=>i.id===s.activeIngotId); if(!ingot) return;
+      s.progress += deltaMs / ingot.baseTime;
+      if(s.progress >= 1){
+        s.progress = 0;
+        if(!hasIngredients(ingot.ingredients)){ log(`You lack materials to continue smelting ${ingot.name}.`); s.isSmelting = false; return; }
+        if(!consumeIngredients(ingot.ingredients)){ log(`Error consuming materials for ${ingot.name}.`); s.isSmelting = false; return; }
+        const chance = ingot.successChance ?? 1;
+        if(Math.random() <= chance){
+          const added = addItemToInventory(ingot.id, ingot.name, 1);
+          if(added){ addXp("Smelting", ingot.xp); log(`You successfully smelt 1 × ${ingot.name}.`); } else { log("You stop smelting because your inventory is full."); s.isSmelting = false; }
+        } else {
+          log(`The attempt to smelt ${ingot.name} fails; the ores are ruined.`);
+        }
+      }
+      if(inventoryCount() >= gameState.player.inventoryCapacity) s.isSmelting = false;
+      if(gameState.currentMenu === "smelter"){ const bar = menuContainerEl.querySelector(`.progress-fill[data-smelt-progress="${ingot.id}"]`); if(bar) bar.style.width = (s.progress*100) + "%"; }
+    }
+
+    function startCrafting(recipeId){
+      const r = gameState.armory.recipes.find(x=>x.id===recipeId); if(!r) return;
+      const smithLevel = getStat("Smithing").level;
+      if((r.levelReq || 0) > smithLevel){ log(`You need Smithing level ${r.levelReq} to smith ${r.name}.`); return; }
+      let ingredients = [];
+      if(r.ingredients) ingredients = r.ingredients;
+      else {
+        const ingot = gameState.smelting.ingots.find(i=>i.id===r.ingotId);
+        ingredients.push({ id: r.ingotId, name: ingot?ingot.name:r.ingotId, qty: r.ingots || 1 });
+        if(["Armor","Shield"].includes(r.type)){
+          const leatherQty = r.tier === "Copper" ? 1 : r.tier === "Bronze" ? 2 : r.tier === "Iron" ? 3 : 4;
+          ingredients.push({ id: "leather", name: "Leather", qty: leatherQty });
+        }
+      }
+      if(!hasIngredients(ingredients)){ log(`You don't have the materials to smith ${r.name}.`); return; }
+      if(inventoryCount() >= gameState.player.inventoryCapacity){ log("Your inventory is full. Cannot smith."); return; }
+      gameState.armory.activeRecipeId = recipeId;
+      gameState.armory.progress = 0;
+      gameState.armory.isCrafting = true;
+      gameState.armory.lastTick = performance.now();
+      log(`You begin crafting ${r.name}...`);
+      if(gameState.currentMenu==="armory") renderArmoryMenu();
+    }
+    function cancelCrafting(){
+      if(!gameState.armory.isCrafting) return;
+      const recipe = gameState.armory.recipes.find(r=>r.id===gameState.armory.activeRecipeId);
+      log(`You stop crafting ${recipe ? recipe.name : ""}...`);
+      gameState.armory.isCrafting = false;
+      gameState.armory.activeRecipeId = null;
+      gameState.armory.progress = 0;
+      if(gameState.currentMenu==="armory") renderArmoryMenu();
+    }
+
+    function updateCrafting(deltaMs){
+      const a = gameState.armory;
+      if(!a.isCrafting || !a.activeRecipeId) return;
+      const recipe = a.recipes.find(r=>r.id===a.activeRecipeId);
+      if(!recipe) return;
+      a.progress += deltaMs / recipe.baseTime;
+      if(a.progress >= 1){
+        a.progress = 0;
+        let ingredients = [];
+        if(recipe.ingredients) ingredients = recipe.ingredients;
+        else {
+          const ingot = gameState.smelting.ingots.find(i=>i.id===recipe.ingotId);
+          ingredients.push({ id: recipe.ingotId, name: ingot?ingot.name:recipe.ingotId, qty: recipe.ingots || 1 });
+          if(["Armor","Shield"].includes(recipe.type)){
+            const leatherQty = recipe.tier === "Copper" ? 1 : recipe.tier === "Bronze" ? 2 : recipe.tier === "Iron" ? 3 : 4;
+            ingredients.push({ id: "leather", name: "Leather", qty: leatherQty });
+          }
+        }
+        if(!hasIngredients(ingredients)){ log(`You lack materials to continue crafting ${recipe.name}.`); a.isCrafting = false; return; }
+        if(!consumeIngredients(ingredients)){ log(`Error consuming materials for ${recipe.name}.`); a.isCrafting = false; return; }
+        const added = addItemToInventory(recipe.id, recipe.name, 1);
+        if(added){
+          addXp("Smithing", recipe.xp || 0);
+          log(`You successfully craft 1 × ${recipe.name}.`);
+        } else {
+          log("You stop crafting because your inventory is full.");
+          a.isCrafting = false;
+        }
+      }
+      if(inventoryCount() >= gameState.player.inventoryCapacity) a.isCrafting = false;
+      if(gameState.currentMenu === "armory"){
+        const bar = menuContainerEl.querySelector(`.progress-fill[data-craft-progress="${recipe.id}"]`);
+        if(bar) bar.style.width = (a.progress*100) + "%";
+      }
+    }
+
+    /* COMBAT & BOX TAME MECHANICS */
+    function startEncounter(){
+      const roll = Math.random();
+      let enemy;
+      if(roll < 0.3){
+        const baseHp = randomInt(16,24);
+        enemy = { name:"Mad Cow", maxHp:baseHp, hp:baseHp, attack:randomInt(3,5), goldReward:randomInt(4,8), xpAttack:10, xpStrength:10, xpEndurance:8, leatherMin:1, leatherMax:3 };
+      } else {
+        const names = ["Forest Rat","Cave Spider","Runaway Goblin"];
+        const name = names[randomInt(0,names.length-1)];
+        const baseHp = randomInt(8,16);
+        enemy = { name, maxHp:baseHp, hp:baseHp, attack:randomInt(2,4), goldReward:randomInt(4,9), xpAttack:8, xpStrength:8, xpEndurance:6 };
+      }
+      gameState.combat.inCombat = true; gameState.combat.enemy = enemy; gameState.combat.playerTurn = true;
+      log(`You encounter a <strong>${enemy.name}</strong>!`);
+    }
+
+    function endEncounter(victory){
+      const c = gameState.combat; if(!c.inCombat) return;
+      if(victory){
+        const e = c.enemy;
+        gameState.player.gold += e.goldReward;
+        addXp("Attack", e.xpAttack); addXp("Strength", e.xpStrength); addXp("Endurance", e.xpEndurance);
+        renderVitals();
+        let lootMsg = `You defeat the ${e.name} and gain ${e.goldReward} gold`;
+        if(e.name === "Mad Cow"){
+          const leatherQty = randomInt(e.leatherMin, e.leatherMax);
+          if(addItemToInventory("leather","Leather",leatherQty)) lootMsg += ` and ${leatherQty} × Leather`;
+        }
+        lootMsg += "!";
+        log(lootMsg);
+      } else {
+        log("You escape the encounter.");
+      }
+      gameState.combat.inCombat = false; gameState.combat.enemy = null; gameState.combat.playerTurn = true;
+    }
+
+    function enemyAttack(){
+      const c = gameState.combat; if(!c.inCombat||!c.enemy) return;
+      const e = c.enemy; const dmg = randomInt(Math.max(1,e.attack-1), e.attack+1);
+      gameState.player.hp = Math.max(0, gameState.player.hp - dmg); renderVitals();
+      log(`The ${e.name} hits you for <strong>${dmg}</strong> damage.`);
+      if(gameState.player.hp <= 0){ log(`<strong>You have fallen in battle!</strong> You wake up back in town.`); gameState.player.hp = Math.ceil(gameState.player.maxHp/2); renderVitals(); gameState.combat.inCombat = false; gameState.combat.enemy = null; gameState.combat.playerTurn = true; setMenu("town"); return; }
+      c.playerTurn = true;
+    }
+
+    function playerAttack(){
+      const c = gameState.combat; if(!c.inCombat||!c.enemy||!c.playerTurn) return;
+      const atkLevel = getStat("Attack").level, strLevel = getStat("Strength").level;
+      const base = 2 + Math.floor((atkLevel + strLevel)/4); const dmg = randomInt(base, base+3);
+      c.enemy.hp = Math.max(0, c.enemy.hp - dmg); log(`You strike the ${c.enemy.name} for <strong>${dmg}</strong> damage.`); c.playerTurn = false;
+      if(c.enemy.hp <= 0){ endEncounter(true); return; }
+      setTimeout(()=>{ enemyAttack(); renderExploreMenu(); }, 500);
+    }
+
+    function playerDefend(){
+      const c = gameState.combat; if(!c.inCombat||!c.enemy||!c.playerTurn) return;
+      log("You brace yourself."); c.playerTurn = false;
+      setTimeout(()=>{
+        const e = c.enemy; const raw = randomInt(Math.max(1,e.attack-1), e.attack+1); const dmg = Math.max(0, raw - randomInt(1,3));
+        gameState.player.hp = Math.max(0, gameState.player.hp - dmg); renderVitals();
+        log(`The ${e.name} attacks but you mitigate the blow, taking <strong>${dmg}</strong> damage.`);
+        if(gameState.player.hp <= 0){ log(`<strong>You have fallen in battle!</strong> You wake up back in town.`); gameState.player.hp = Math.ceil(gameState.player.maxHp/2); renderVitals(); gameState.combat.inCombat = false; gameState.combat.enemy = null; gameState.combat.playerTurn = true; setMenu("town"); return; }
+        gameState.combat.playerTurn = true; renderExploreMenu();
+      }, 500);
+    }
+
+    function attemptFlee(){
+      const c = gameState.combat; if(!c.inCombat) return;
+      const chance = 0.5;
+      if(Math.random() < chance){ log(`You successfully flee from the ${c.enemy.name}.`); endEncounter(false); }
+      else { log("You fail to escape!"); c.playerTurn = false; setTimeout(()=>{ enemyAttack(); renderExploreMenu(); }, 500); }
+    }
+
+    /* BOX / TAME MECHANICS */
+    const BOX_TIER_POWER = { "box_copper":1, "box_tin":2, "box_bronze":3, "box_iron":4, "box_steel":5 };
+
+    function computeCaptureChance(boxId, enemy){
+      // same formula used when using the box
+      const boxPower = BOX_TIER_POWER[boxId] || 1;
+      const playerPower = (getStat("Strength").level + getStat("Attack").level + getStat("Endurance").level) / 3;
+      const enemyPower = (enemy.maxHp / 6) + (enemy.attack * 2);
+      let chance = 0.15 + (boxPower * 0.08) + ((playerPower - enemyPower) * 0.03);
+      if(chance < 0.02) chance = 0.02;
+      if(chance > 0.95) chance = 0.95;
+      return chance;
+    }
+
+    function useBox(boxId){
+      const box = gameState.player.inventory.find(i=>i.id===boxId);
+      if(!box || box.quantity <= 0){ log("You don't have that box."); return; }
+      if(!gameState.combat.inCombat || !gameState.combat.enemy){ log("There's no creature to use a box on."); return; }
+      const enemy = gameState.combat.enemy;
+      removeItemFromCollection(gameState.player.inventory, boxId, 1);
+      renderInventory();
+      const chance = computeCaptureChance(boxId, enemy);
+      const pct = Math.round(chance * 100);
+      log(`You throw a ${box.name} at the ${enemy.name} (capture chance ${pct}%)...`);
+      if(Math.random() <= chance){
+        const tameId = `tamed_${enemy.name.toLowerCase().replace(/\s+/g,'_')}`;
+        const tameName = `Tamed ${enemy.name}`;
+        if(addItemToInventory(tameId, tameName, 1)){
+          log(`Success! You tamed the ${enemy.name} and place it into the ${box.name}.`);
+        } else {
+          log(`Tamed the ${enemy.name}, but your inventory is full so it slips away!`);
+        }
+        gameState.combat.inCombat = false; gameState.combat.enemy = null; gameState.combat.playerTurn = true;
+        return;
+      } else {
+        log(`The ${enemy.name} resists capture! The box is ruined.`);
+        gameState.combat.playerTurn = false;
+        setTimeout(()=>{ enemyAttack(); renderExploreMenu(); }, 400);
+      }
+    }
+
+    /* SAVE / LOAD */
+    function saveGame(){
+      try {
+        const saveData = JSON.stringify(gameState);
+        localStorage.setItem("idleRPGSave", saveData);
+        localStorage.setItem("idleRPGSaveTime", Date.now().toString());
+        log("Game saved.");
+        return true;
+      } catch(e) {
+        console.error("Failed to save game:", e);
+        return false;
+      }
+    }
+
+    function loadGame(){
+      try {
+        const saveData = localStorage.getItem("idleRPGSave");
+        if(!saveData) return false;
+        const loaded = JSON.parse(saveData);
+        // Restore state
+        Object.assign(gameState, loaded);
+        // Reset tick timestamps to prevent time jumps
+        gameState.mining.lastTick = null;
+        gameState.smelting.lastTick = null;
+        gameState.armory.lastTick = null;
+        gameState._lastClockTick = null;
+        const saveTime = localStorage.getItem("idleRPGSaveTime");
+        if(saveTime){
+          const elapsed = Math.floor((Date.now() - parseInt(saveTime)) / 1000);
+          if(elapsed > 0) log(`Welcome back! ${elapsed} seconds have passed since your last save.`);
+        }
+        return true;
+      } catch(e) {
+        console.error("Failed to load game:", e);
+        return false;
+      }
+    }
+
+    function resetGame(){
+      if(!confirm("Are you sure you want to reset your game? This cannot be undone.")) return;
+      localStorage.removeItem("idleRPGSave");
+      localStorage.removeItem("idleRPGSaveTime");
+      location.reload();
+    }
+
+    /* GAME LOOP */
+    document.querySelectorAll(".tab-button").forEach(btn=>btn.addEventListener("click", ()=>setMenu(btn.dataset.menu)));
+    let lastAutoSave = 0;
+    function gameTick(timestamp){
+      if(!gameState._lastClockTick) gameState._lastClockTick = timestamp;
+      const dt = timestamp - gameState._lastClockTick;
+      if(dt >= 1000){
+        const minutes = Math.floor(dt / 1000);
+        gameState.timeMinutes += minutes;
+        gameState._lastClockTick += minutes * 1000;
+        renderGameTime();
+      }
+      if(!gameState.mining.lastTick) gameState.mining.lastTick = timestamp;
+      const miningDelta = timestamp - gameState.mining.lastTick;
+      if(miningDelta > 0){ updateMining(miningDelta); gameState.mining.lastTick = timestamp; }
+      if(!gameState.smelting.lastTick) gameState.smelting.lastTick = timestamp;
+      const smeltDelta = timestamp - gameState.smelting.lastTick;
+      if(smeltDelta > 0){ updateSmelting(smeltDelta); gameState.smelting.lastTick = timestamp; }
+      if(!gameState.armory.lastTick) gameState.armory.lastTick = timestamp;
+      const craftDelta = timestamp - gameState.armory.lastTick;
+      if(craftDelta > 0){ updateCrafting(craftDelta); gameState.armory.lastTick = timestamp; }
+      // Auto-save every 30 seconds
+      if(timestamp - lastAutoSave >= 30000){
+        saveGame();
+        lastAutoSave = timestamp;
+      }
+      requestAnimationFrame(gameTick);
+    }
+
+    /* INIT */
+    function init(){
+      // Try to load saved game
+      const loaded = loadGame();
+      if(!loaded){
+        // New game - add starter items
+        addItemToInventory("copper_ore","Copper Ore",2);
+        addItemToInventory("tin_ore","Tin Ore",2);
+        addItemToInventory("leather","Leather",1);
+        addItemToInventory("coal","Coal",1);
+        log("Welcome — Armory now has crafting timers! Boxes show capture % in combat.");
+      } else {
+        log("Game loaded successfully.");
+      }
+      
+      // Setup save/reset buttons
+      document.getElementById("manual-save-btn").onclick = ()=>{
+        if(saveGame()){
+          const statusEl = document.getElementById("save-status");
+          statusEl.textContent = "Saved!";
+          statusEl.style.color = "#4fd9b3";
+          setTimeout(()=>{ statusEl.textContent = ""; }, 2000);
+        }
+      };
+      document.getElementById("reset-btn").onclick = resetGame;
+      
+      renderVitals(); renderStats(); renderInventory(); renderGameTime(); renderMenu(); requestAnimationFrame(gameTick);
+    }
+    init();
+  </script>
+</body>
+</html>

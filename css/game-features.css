@@ -1,0 +1,114 @@
+/* Bank Interface */
+.bank-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.bank-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.bank-item-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.bank-item-quantity {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.bank-item-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.btn-small {
+  padding: 4px 8px;
+  font-size: 11px;
+  min-width: auto;
+  flex: 1;
+}
+
+/* Combat Interface */
+.combat-panel {
+  border-radius: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+}
+
+.combat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.combat-entity {
+  flex: 1;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.entity-name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.entity-stat {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.combat-controls {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* Box Display */
+.box-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.box-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+}
+
+.box-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.box-chance {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
